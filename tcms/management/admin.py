@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from tcms.core.history import ReadOnlyHistoryAdmin
+from tcms.core_history import ReadOnlyHistoryAdmin
 from tcms.management.forms import ComponentForm
 from tcms.management.models import (
     Build,
@@ -43,6 +43,16 @@ class ComponentAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "product", "initial_owner", "description")
     list_filter = ("product",)
     search_fields = ("name", "id")
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        Form = super().get_form(request, obj, change, **kwargs)
+
+        class RequestAwareForm(Form):
+            def __init__(self, *args, **kwargs):
+                kwargs["request"] = request
+                super().__init__(*args, **kwargs)
+
+        return RequestAwareForm
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("product", "initial_owner")

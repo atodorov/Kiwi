@@ -31,11 +31,9 @@ class ComponentForm(forms.ModelForm):
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
+        request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
-        request = kwargs.get("request")
-        print(f"DEBUG: request={request}")
         if request and hasattr(request, "tenant"):
-            print(f"DEBUG: tenant={request.tenant}")
             self.fields["initial_owner"].queryset = (
                 request.tenant.authorized_users.all()
             )
