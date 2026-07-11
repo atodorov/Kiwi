@@ -49,7 +49,7 @@ def create(values, **kwargs):
     if not values.get("is_active"):
         values["is_active"] = True
 
-    form = NewPlanAPIForm(values)
+    form = NewPlanAPIForm(values, request=request)
     form.populate(product_id=values["product"])
 
     if form.is_valid():
@@ -157,7 +157,7 @@ def remove_tag(plan_id, tag_name):
 
 @permissions_required("testplans.change_testplan")
 @rpc_method(name="TestPlan.update")
-def update(plan_id, values):
+def update(plan_id, values, **kwargs):
     """
     .. function:: RPC TestPlan.update(plan_id, values)
 
@@ -173,8 +173,9 @@ def update(plan_id, values):
         :raises PermissionDenied: if missing *testplans.change_testplan* permission
         :raises ValueError: if validations fail
     """
+    request = kwargs.get(REQUEST_KEY)
     test_plan = TestPlan.objects.get(pk=plan_id)
-    form = EditPlanForm(values, instance=test_plan)
+    form = EditPlanForm(values, instance=test_plan, request=request)
     if form.is_valid():
         test_plan = form.save()
         result = model_to_dict(test_plan, exclude=["tag"])

@@ -15,6 +15,13 @@ class NewPlanForm(forms.ModelForm):
 
     text = forms.CharField(widget=SimpleMDE(), required=False)
 
+    def __init__(self, *args, **kwargs):
+        request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+        if request and hasattr(request, "tenant") and request.tenant.schema_name != "public":
+            tenant_users = request.tenant.authorized_users.all()
+            self.fields["author"].queryset = tenant_users
+
     def populate(self, product_id):
         if product_id:
             self.fields["product_version"].queryset = Version.objects.filter(
